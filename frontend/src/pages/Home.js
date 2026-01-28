@@ -6,11 +6,14 @@ import axios from 'axios';
 const Home = () => {
   const [products, setProducts] = useState([]);
 
+  // Use environment variable for API URL
+  const productApiUrl = process.env.REACT_APP_PRODUCT_API_URL;
+
   useEffect(() => {
-    axios.get('http://172.22.157.221:8081/api/products')
+    axios.get(`${productApiUrl}/api/products`)
       .then(res => setProducts(res.data))
       .catch(err => console.log('Home fetch error:', err));
-  }, []);
+  }, [productApiUrl]);
 
   return (
     <>
