@@ -1,77 +1,63 @@
 import { useEffect, useState } from 'react';
-import { Card, Button, Alert, InputGroup, FormControl } from 'react-bootstrap';
+import { Row, Col, Card } from 'react-bootstrap';
+import { Link } from 'react-router-dom';
+import axios from 'axios';
 
-const Payment = () => {
-  const [total, setTotal] = useState(0);
-  const [upiLink, setUpiLink] = useState('');
-  const gstRate = 0.18; // 18% GST
+const Home = () => {
+  const [products, setProducts] = useState([]);
 
   useEffect(() => {
-    const cart = JSON.parse(localStorage.getItem('cart')) || [];
-    const subtotal = cart.reduce((sum, item) => sum + item.finalPrice, 0);
-    const totalWithGst = subtotal * (1 + gstRate);
-    const amount = Math.round(totalWithGst);
-
-    setTotal(amount);
-
-    // Generate real UPI link
-    const link = `upi://pay?pa=merchant@okaxis&pn=MyEcom&am=${amount}&cu=INR&tn=Order_${Date.now()}&mode=02`;
-    setUpiLink(link);
+    axios.get('http://172.22.157.221:8081/api/products')
+      .then(res => setProducts(res.data))
+      .catch(err => console.log('Home fetch error:', err));
   }, []);
 
-  const handlePay = () => {
-    if (upiLink) {
-      window.location.href = upiLink; // Try to open app (works on Android)
-      alert('Opening payment app... (On PC, copy link below and test on phone)');
-    }
-  };
-
-  const copyLink = () => {
-    navigator.clipboard.writeText(upiLink);
-    alert('UPI link copied! Paste in phone browser or share to test');
-  };
-
   return (
-    <div className="text-center">
-      <h2>Payment Options</h2>
-      <Card className="mx-auto mt-4" style={{ maxWidth: '600px' }}>
-        <Card.Body>
-          <Alert variant="success">
-            <strong>Total Amount (incl. 18% GST): ₹{total}</strong>
-          </Alert>
-
-          <p className="mb-4">
-            Click button to open app (works on Android phone)<br />
-            Or copy UPI link below and test on phone
-          </p>
-
-          <Button 
-            variant="primary" 
-            size="lg" 
-            className="mb-3 w-100" 
-            onClick={handlePay}
-          >
-            Pay with Google Pay / PhonePe
-          </Button>
-
-          <InputGroup className="mt-4">
-            <FormControl 
-              value={upiLink} 
-              readOnly 
-              placeholder="UPI link generating..."
-            />
-            <Button variant="outline-secondary" onClick={copyLink}>
-              Copy Link
-            </Button>
-          </InputGroup>
-
-          <small className="text-muted d-block mt-3">
-            Tip: Open http://172.22.157.221:3000 on your phone (same Wi-Fi) for full app experience
-          </small>
-        </Card.Body>
-      </Card>
-    </div>
+    <>
+      <h2 className="mb-4 text-center">Featured Products</h2>
+      {products.length === 0 ? (
+        <p className="text-center">Loading products...</p>
+      ) : (
+        <Row>
+          {products.map(product => (
+            <Col md={4} sm={6} xs={12} key={product.id} className="mb-4">
+              <Card className="h-100 shadow-sm">
+                <Card.Img
+                  variant="top"
+                  src={
+                    product.name === "T-Shirt"
+                      ? "https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?w=500&auto=format&fit=crop"
+                      : product.name === "Jeans"
+                      ? "https://images.unsplash.com/photo-1602293589930-45aad59ba3ab?w=500&auto=format&fit=crop"
+                      : "https://images.unsplash.com/photo-1592890288564-76628a30a0c9?w=500&auto=format&fit=crop"
+                  }
+                  alt={product.name}
+                  style={{ height: '250px', objectFit: 'cover' }}
+                />
+                <Card.Body className="d-flex flex-column">
+                  <Card.Title>{product.name}</Card.Title>
+                  <div className="mt-auto">
+                    <h5 className="text-danger mb-1">
+                      ₹{product.finalPrice}
+                      <small className="text-muted ms-2 text-decoration-line-through">
+                        ₹{product.price}
+                      </small>
+                      <span className="badge bg-success ms-2">
+                        {product.discountPercent}% OFF
+                      </span>
+                    </h5>
+                    <Link to={`/product/${product.id}`} className="btn btn-primary w-100 mt-2">
+                      View Details
+                    </Link>
+                  </div>
+                </Card.Body>
+              </Card>
+            </Col>
+          ))}
+        </Row>
+      )}
+    </>
   );
 };
 
-export default Payment;
+export default Home;
