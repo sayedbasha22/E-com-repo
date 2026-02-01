@@ -7,12 +7,14 @@ import API_BASE_URL from "../config";
 const Home = () => {
   const [products, setProducts] = useState([]);
 
+  // Use environment variable for API URL
+  const productApiUrl = process.env.REACT_APP_PRODUCT_API_URL;
+
   useEffect(() => {
-    axios
-      .get(`${API_BASE_URL}:8081/api/products`)
-      .then((res) => setProducts(res.data))
-      .catch((err) => console.error("Product fetch failed:", err));
-  }, []);
+    axios.get(`${productApiUrl}/api/products`)
+      .then(res => setProducts(res.data))
+      .catch(err => console.log('Home fetch error:', err));
+  }, [productApiUrl]);
 
   return (
     <>
