@@ -1,0 +1,30 @@
+version: "3.9"
+
+services:
+  product-service:
+    build: ./Product-service
+    image: product-service:v1
+    ports:
+      - "8081:8081"
+
+  cart-service:
+    build: ./Cart-service
+    image: cart-service:v1
+    ports:
+      - "8083:8083"
+
+  payment-service:
+    build: ./Payment-service
+    image: payment-service:v1
+    ports:
+      - "8084:8084"
+
+  frontend:
+    build: ./frontend
+    image: frontend:v1
+    ports:
+      - "80:80"
+    depends_on:
+      - product-service
+      - cart-service
+      - payment-service
